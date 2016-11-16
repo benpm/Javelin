@@ -80,7 +80,7 @@ var cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
 
 //Add Arrow
-var arrow = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), 1, 0xffffff, 0.5, 0.25);
+var arrow = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), 0.1, 0xffffff, 0.3, 0.1);
 arrow.line.material.color.setHex(0x000000);
 arrow.cone.material.color.setHex(0x000000);
 scene.add(arrow);
@@ -92,8 +92,8 @@ circle.quadraticCurveTo(1, 1, 1, 0);
 circle.quadraticCurveTo(1, -1, 0, -1);
 circle.quadraticCurveTo(-1, -1, -1, 0);
 circle.quadraticCurveTo(-1, 1, 0, 1);
-//scene.add(new THREE.Line(circle, new THREE.LineBasicMaterial({color: 0x000000, linewidth: 1})));
-
+var circLine = new THREE.Line(circle.createPointsGeometry(8), new THREE.LineBasicMaterial({color: 0x000000, linewidth: 1}));
+//scene.add(circLine);
 
 //Render
 render();
@@ -108,14 +108,15 @@ function render() {
 
 	//Move
 	cube.position = camera.position;
-	cube.rotation.y += 0.05;
-	cube.rotation.z += 0.05;
-	player.pos.x += (mouse.x - mouse.lastx) * player.speed;
-	player.pos.y += (mouse.y - mouse.lasty) * player.speed;
+	//cube.rotation.y += 0.05;
+	//cube.rotation.z += 0.05;
+	player.pos.x = mouse.x;
+	player.pos.y = mouse.y;
+	//circLine.position = player.pos;
 	arrow.rotation.z = angle(mouse.lastx, mouse.lasty, mouse.x, mouse.y);
 	arrow.position.x = mouse.lastx;
 	arrow.position.y = mouse.lasty;
-	arrow.setLength(dist(mouse.lastx, mouse.lasty, mouse.x, mouse.y) * 1.5, 0.3, 0.1);
+	arrow.setLength(Math.abs(dist(mouse.lastx, mouse.lasty, mouse.x, mouse.y) * 1.5), 0.3, 0.1);
 
 	//Translate Camera
 	//camera.position.lerp(player.pos, 0.05);
