@@ -9,6 +9,7 @@ var mouse = {
 }
 var player = {
 	pos: new THREE.Vector3(0, 0, 0),
+	jav: new THREE.Vector3(0, 0, 0),
 	hp: 6,
 	speed: 0.25
 }
@@ -23,6 +24,9 @@ function angle(x1, y1, x2, y2) {
 function dist(x1, y1, x2, y2) {
 	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
+Number.prototype.clamp = function(min, max) {
+	return Math.min(max, Math.max(this, min));
+};
 
 //Listeners
 window.addEventListener("resize", function f() {
@@ -74,7 +78,7 @@ document.body.appendChild(renderer.domElement)
 var debugText = document.getElementById("debug");
 
 //Add Cube
-var geometry = new THREE.BoxGeometry(3, 3, 3);
+var geometry = new THREE.BoxGeometry(1, 1, 1);
 var material = new THREE.MeshBasicMaterial({color: 0x333333});
 var cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
@@ -88,15 +92,14 @@ scene.add(arrow);
 //Add Circle
 var circle = new THREE.Shape();
 circle.moveTo(0, 1);
-circle.quadraticCurveTo(1, 1, 1, 0);
-circle.quadraticCurveTo(1, -1, 0, -1);
-circle.quadraticCurveTo(-1, -1, -1, 0);
-circle.quadraticCurveTo(-1, 1, 0, 1);
+circle.arc(0, -1, 1, 0, 2 * Math.PI);
 var circLine = new THREE.Line(circle.createPointsGeometry(8), new THREE.LineBasicMaterial({color: 0x000000, linewidth: 1}));
-//scene.add(circLine);
+circLine.scale.x = circLine.scale.y = 0.15;
+scene.add(circLine);
 
 //Render
 render();
+var lineLength = 0;
 function render() {
 	//Pre-Frame
 	requestAnimationFrame(render);
@@ -107,19 +110,23 @@ function render() {
 		+ "<br>Player Position = " + player.pos.x + "," + player.pos.y;
 
 	//Move
-	cube.position = camera.position;
-	//cube.rotation.y += 0.05;
-	//cube.rotation.z += 0.05;
+	//cube.position = camera.position;
+	cube.rotation.y += 0.05;
+	cube.rotation.z += 0.05;
+	player.jav.x = lerp(player.jav.x, mouse.lastx, 0.5);
+	player.jav.y = lerp(player.jav.y, mouse.lasty, 0.5);
 	player.pos.x = mouse.x;
 	player.pos.y = mouse.y;
-	//circLine.position = player.pos;
+
+	//Visual
+	circLine.position.copy(player.pos);
 	arrow.rotation.z = angle(mouse.lastx, mouse.lasty, mouse.x, mouse.y);
-	arrow.position.x = mouse.lastx;
-	arrow.position.y = mouse.lasty;
-	arrow.setLength(Math.abs(dist(mouse.lastx, mouse.lasty, mouse.x, mouse.y) * 1.5), 0.3, 0.1);
+	arrow.position.copy(player.pos);
+	lineLength = lerp(lineLength, player.jav.distanceTo(player.pos), 0.5);
+	arrow.setLength(lineLength, lineLength / 4, 0.2);
 
 	//Translate Camera
-	//camera.position.lerp(player.pos, 0.05);
+	camera.position.lerp(player.pos, 0.05);
 
 	//Post-Frame
 	renderer.render(scene, camera);
