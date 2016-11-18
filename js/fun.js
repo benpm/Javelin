@@ -41,8 +41,8 @@ document.addEventListener("mousemove", function f(event){
 	var vector = new THREE.Vector3(
 		(event.clientX / window.innerWidth - 0.5) * 2, 
 		-(event.clientY / window.innerHeight - 0.5) * 2, -1).unproject(camera);
-	mouse.x = vector.x;
-	mouse.y = vector.y;
+	mouse.x = vector.x - camera.position.x;
+	mouse.y = vector.y - camera.position.y;
 });
 document.addEventListener("touchmove", function f(event){
 	mouse.x = event.clientX;
@@ -55,6 +55,9 @@ document.addEventListener("mousedown", function f(event){
 document.addEventListener("mouseup", function f(event){
 	mouse.left = (event.buttons & 1);
 	mouse.right = (event.buttons & 2);
+});
+document.addEventListener("pointerlockchange", function f(event){
+
 });
 
 //Setup
@@ -98,6 +101,7 @@ circLine.scale.x = circLine.scale.y = 0.15;
 scene.add(circLine);
 
 //Render
+document.body.requestPointerLock();
 render();
 var lineLength = 0;
 function render() {
@@ -105,28 +109,29 @@ function render() {
 	requestAnimationFrame(render);
 
 	//Text
-	debugText.innerHTML = "Mouse Position = " + mouse.x + "," + mouse.y
+	debugText.innerHTML = 
+		"Javelin Position = " + player.jav.x + "," + player.jav.y
 		+ "<br>Camera Position = " + camera.position.x + "," + camera.position.y
-		+ "<br>Player Position = " + player.pos.x + "," + player.pos.y;
+		+ "<br>Player Position = " + player.pos.x + "," + player.pos.y
+		+ "<br>Mouse Position = " + mouse.x + "," + mouse.y;
 
 	//Move
-	//cube.position = camera.position;
 	cube.rotation.y += 0.05;
 	cube.rotation.z += 0.05;
-	player.jav.x = lerp(player.jav.x, mouse.lastx, 0.5);
-	player.jav.y = lerp(player.jav.y, mouse.lasty, 0.5);
-	player.pos.x = mouse.x;
-	player.pos.y = mouse.y;
+	player.jav.x = player.pos.x;
+	player.jav.y = player.pos.y;
+	player.pos.x += mouse.x / 20;
+	player.pos.y += mouse.y / 20;
 
 	//Visual
 	circLine.position.copy(player.pos);
-	arrow.rotation.z = angle(mouse.lastx, mouse.lasty, mouse.x, mouse.y);
+	arrow.rotation.z = angle(0, 0, mouse.x, mouse.y);
 	arrow.position.copy(player.pos);
-	lineLength = lerp(lineLength, player.jav.distanceTo(player.pos), 0.5);
+	lineLength = lerp(lineLength, dist(mouse.x, mouse.y, 0, 0), 0.5);
 	arrow.setLength(lineLength, lineLength / 4, 0.2);
 
 	//Translate Camera
-	camera.position.lerp(player.pos, 0.05);
+	camera.position.lerp(player.pos, 0.2);
 
 	//Post-Frame
 	renderer.render(scene, camera);
